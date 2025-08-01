@@ -1,0 +1,120 @@
+= CloudBees action: Fetch secrets from CyberArk Conjur and use it within a job 
+
+Use this action to fetch one or more secrets from CyberArk Conjur and use it within a job. The fetched secrets are masked for security and can't be logged or be accessed by backgroud processes.
+
+== Inputs
+
+[cols="2a,1a,1a,3a",options="header"]
+.Input details
+|===
+
+| Input name
+| Data type
+| Required?
+| Description
+
+:
+    description: 
+    required: true
+  :
+    description: 
+    required: true
+  :
+    description: 
+    required: true
+  :
+    description: 
+    required: true
+
+| `url`
+| String
+| Yes
+| The URL of your CyberArk Conjur server.
+
+| `api-key`
+| String
+| Yes
+| API key to generate a short-lived access token for authentication.
+
+| `login`
+| String
+| Yes
+| The host login name.
+
+| `variables`
+| String
+| Yes
+| A string of comma-separated values with the full path of each secret to be fetched.
+
+
+|===
+
+== Output
+
+[cols="2a,1a,3a",options="header"]
+.Output details
+|===
+
+| Output name
+| Data type
+| Description
+
+
+| `conjur_output`
+| JSON string
+| The value of each secret that was configured to be fetched
+
+|===
+
+== Usage example
+
+In your YAML file, add:
+
+[source,yaml]
+----
+
+    steps:
+      - name: Fetch secrets from Conjur
+        uses: cloudbees-io/cyberark-conjur-fetch-secrets@v1
+        with: 
+          url: your-conjur-server-url
+          api-key: your-api-key
+          login: your-host-login
+          variables: 'full/path/to/secret-1,full/path/to/secret-2'
+----
+
+Using the output in a downstream step in the same job:
+
+[source,yaml]
+----
+jobs:
+  your-job-that-needs-secrets-from-conjur:
+    steps:
+      - name: Fetch secrets from Conjur 
+        id: your-conjur-fetch-secrets-step
+        uses: cloudbees-io/cyberark-conjur-fetch-secrets@v1
+        with:
+          url: ${{ vars.YOUR_CONJUR_URL }}
+          api-key: ${{ secrets.YOUR_CONJUR_API_KEY }}
+          login: ${{ vars.YOUR_CONJUR_LOGIN }}
+          variables: 'full/path/to/secret-1,full/path/to/secret-2'
+
+      - name: use-secrets
+        uses: docker://alpine:latest
+        shell: sh
+        run: | # Note that the forward slashes "/" in the full path are replaced with underscores "_". The Conjur action also masks the fetched secrets, so these echo commands will output ***
+          echo "Using secrets in another step"
+          echo ${{ fromJSON(steps.your-conjur-fetch-secrets-step.outputs.conjur_output).full_path_to_secret-1 }}
+          echo ${{ fromJSON(steps.your-conjur-fetch-secrets-step.outputs.conjur_output).full_path_to_secret-2 }}
+
+----
+
+== License
+
+This code is made available under the 
+link:https://opensource.org/license/mit/[MIT license].
+
+== References
+
+* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-saas-platform/latest/actions[using actions in CloudBees workflows].
+* Learn about link:https://docs.cloudbees.com/docs/cloudbees-saas-platform/latest/[the CloudBees platform].

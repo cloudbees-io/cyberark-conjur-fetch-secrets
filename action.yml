@@ -1,0 +1,43 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: action
+name: newrelic build actions
+inputs:
+  url:  # id of input
+    description: 'Conjur cloud URL'
+    required: true
+  api-key:  # id of input
+    description: 'Api key'
+    required: true
+  login:  # id of input
+    description: 'Login (User ID or Host ID)'
+    required: true
+  variables:  # id of input
+    description: 'Variables as a string of comma separated values'
+    required: true
+
+outputs:
+  conjur_output:
+    description: Path to the output conjur_output_var
+    value: ${{ steps.invoke-conjur-action.outputs.conjur_output_var }}
+
+runs:
+  using: composite
+  steps:
+    - id: invoke-conjur-action
+      name: invoke-conjur-action
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/conjur-actions:main-d24a611fa253c034c720b422d5e6af972d618a7e
+      shell: sh
+      env:
+        RUN_ID: ${{ cloudbees.run_id }}
+        JOB_ID: ${{ job.id }}
+        STEP_ID: ${{ step.internal.id }}
+        DNS_URL: ${{ cloudbees.api.url }}
+        JWT_TOKEN: ${{ cloudbees.api.token }}
+        CONJUR_URL: ${{ inputs.url }}
+        CONJUR_API_KEY: ${{ inputs.api-key }}
+        CONJUR_LOGIN: ${{ inputs.login }}
+        CONJUR_VARIABLES: ${{ inputs.variables }}
+      run: |
+        set -x
+        cd /app
+        ./conjur

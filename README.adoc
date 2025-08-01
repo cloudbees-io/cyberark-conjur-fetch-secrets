@@ -13,18 +13,6 @@ Use this action to fetch one or more secrets from CyberArk Conjur and use it wit
 | Required?
 | Description
 
-:
-    description: 
-    required: true
-  :
-    description: 
-    required: true
-  :
-    description: 
-    required: true
-  :
-    description: 
-    required: true
 
 | `url`
 | String
@@ -62,7 +50,7 @@ Use this action to fetch one or more secrets from CyberArk Conjur and use it wit
 
 | `conjur_output`
 | JSON string
-| The value of each secret that was configured to be fetched
+| The value of each secret that was configured to be fetched.
 
 |===
 

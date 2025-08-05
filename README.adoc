@@ -35,7 +35,7 @@ Fetched secret output is masked in CloudBees platform and is not logged or acces
 | Yes
 | A comma-separated list of the full paths of each secret to be fetched.
 [#slash]
-NOTE: Any forward slashes (`+/+`) in the full path are replaced with underscores (`+_+`) by CloudBees platform, so for all references to full paths, you must replace `+/+` with `+_+`.
+NOTE: Any forward slashes (`+/+`) in the full path are replaced with underscores (`+_+`) by CloudBees platform, so to refer to full paths, you must replace `+/+` with `+_+`.
 
 |===
 

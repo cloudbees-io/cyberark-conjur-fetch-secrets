@@ -90,7 +90,7 @@ ${{ fromJSON(steps.<action_step_ID>.outputs.conjur_output).<full_path_no_slashes
 
 In the following example, the action output is used in a downstream step of the same job.
 
-NOTE: Each `echo` command outputs `\***`, because the action masks all fetched secrets.
+NOTE: Each `echo` command outputs `\***` in place of the secret, because the action masks all fetched secrets.
 
 [source,yaml,role="default-expanded"]
 ----

@@ -49,10 +49,11 @@ Fetched secret output is masked in CloudBees platform and is not logged or acces
 | `conjur_output`
 | JSON string
 | The value of each fetched secret, in JSON format.
-[#slash]
-NOTE: Any forward slashes (`+/+`) in the `variables` input are replaced with underscores (`+_+`) by CloudBees platform in the output, so to refer to full paths, you must replace `+/+` with `+_+`.
 
 |===
+
+[#slash]
+NOTE: Any forward slashes (`+/+`) in the `variables` input are replaced with underscores (`+_+`) by CloudBees platform in the output, so to refer to full paths, you must replace `+/+` with `+_+`.
 
 == Usage examples
 

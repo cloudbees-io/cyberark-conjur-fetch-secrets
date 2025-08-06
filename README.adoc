@@ -3,6 +3,8 @@
 Use this action to fetch secrets from CyberArk Conjur, a tool that securely stores and retrieves sensitive information, such as passwords and API keys.
 Fetched secret output is masked in CloudBees platform and is not logged or accessed by background processes, so it can be used securely in a downstream step of the same job.
 
+NOTE: If you want to use the same secrets in another job, you must call the Conjur action again in that job. 
+
 == Inputs
 
 [cols="14%a,9%a,12%a,65%a",options="header"]
@@ -78,7 +80,6 @@ The following is a basic example of using this action:
 === Using the action output
 
 Access the `conjur_output` values in downstream steps of the same job using the `outputs` xref:dsl-syntax:contexts.adoc[context].
-If you want to use the same secrets in another job, you must call the Conjur action again in that job.
 Use the `conjur_output` output for a single secret value as follows, where `<action_step_ID>` is the action step ID, and `<full_path_no_slashes>` is the full path of the secret, with any `+/+` replaced with `+_+`:
 
 [source,yaml]

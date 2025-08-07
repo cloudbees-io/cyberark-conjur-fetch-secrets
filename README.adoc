@@ -1,10 +1,13 @@
-= CloudBees action: Fetch secrets from CyberArk Conjur and use it within a job 
+= CloudBees action: Fetch secrets from CyberArk Conjur
 
-Use this action to fetch one or more secrets from CyberArk Conjur and use it within a job. The fetched secrets are masked for security and can't be logged or be accessed by backgroud processes.
+Use this action to fetch secrets from CyberArk Conjur, a tool that securely stores and retrieves sensitive information, such as passwords and API keys.
+Fetched secret output is masked in CloudBees platform and cannot be logged or accessed by background processes, so it can be used securely in a downstream step of the same job.
+
+NOTE: If you want to use the same secrets in another job, you must call the Conjur action again in that job. 
 
 == Inputs
 
-[cols="2a,1a,1a,3a",options="header"]
+[cols="14%a,9%a,12%a,65%a",options="header"]
 .Input details
 |===
 
@@ -13,33 +16,31 @@ Use this action to fetch one or more secrets from CyberArk Conjur and use it wit
 | Required?
 | Description
 
-
-| `url`
+| `login`
 | String
 | Yes
-| The URL of your CyberArk Conjur server.
+| The Conjur workload identity.
 
 | `api-key`
 | String
 | Yes
-| API key to generate a short-lived access token for authentication.
+| The API key for generating a short-lived access token for authentication.
 
-| `login`
+| `url`
 | String
 | Yes
-| The host login name.
+| The Conjur server URL.
 
 | `variables`
 | String
 | Yes
-| A string of comma-separated values with the full path of each secret to be fetched.
-
+| A comma-separated list of the full paths of each secret to be fetched.
 
 |===
 
 == Output
 
-[cols="2a,1a,3a",options="header"]
+[cols="2a,2a,3a",options="header"]
 .Output details
 |===
 
@@ -47,56 +48,74 @@ Use this action to fetch one or more secrets from CyberArk Conjur and use it wit
 | Data type
 | Description
 
-
 | `conjur_output`
 | JSON string
-| The value of each secret that was configured to be fetched.
+| The value of each fetched secret, in JSON format.
 
 |===
 
-== Usage example
+[#slash]
+NOTE: Any forward slashes (`+/+`) in the `variables` input are replaced with underscores (`+_+`) by CloudBees platform in the output, so to refer to full paths, you must replace `+/+` with `+_+`.
 
-In your YAML file, add:
+== Usage examples
 
-[source,yaml]
+=== Basic example
+
+The following is a basic example of using this action:
+
+[source,yaml,role="default-expanded"]
 ----
 
     steps:
       - name: Fetch secrets from Conjur
         uses: cloudbees-io/cyberark-conjur-fetch-secrets@v1
-        with: 
-          url: your-conjur-server-url
-          api-key: your-api-key
-          login: your-host-login
-          variables: 'full/path/to/secret-1,full/path/to/secret-2'
+        with:
+          login: ${{ vars.YOUR_CONJUR_WORKLOAD_ID }}
+          api-key: ${{ secrets.YOUR_CONJUR_API_KEY }}
+          url: ${{ vars.YOUR_CONJUR_URL }}
+          variables: full/path/to/secret-1,full/path/to/secret-2
+
 ----
 
-Using the output in a downstream step in the same job:
+=== Using the action output
+
+Access the `conjur_output` values in downstream steps of the same job using the `outputs` xref:dsl-syntax:contexts.adoc[context].
+Use the `conjur_output` output for a single secret value as follows, where `<action_step_ID>` is the action step ID, and `<full_path_no_slashes>` is the full path of the secret, with any `+/+` replaced with `+_+`:
 
 [source,yaml]
 ----
-jobs:
-  your-job-that-needs-secrets-from-conjur:
-    steps:
-      - name: Fetch secrets from Conjur 
-        id: your-conjur-fetch-secrets-step
-        uses: cloudbees-io/cyberark-conjur-fetch-secrets@v1
-        with:
-          url: ${{ vars.YOUR_CONJUR_URL }}
-          api-key: ${{ secrets.YOUR_CONJUR_API_KEY }}
-          login: ${{ vars.YOUR_CONJUR_LOGIN }}
-          variables: 'full/path/to/secret-1,full/path/to/secret-2'
 
-      - name: use-secrets
-        uses: docker://alpine:latest
-        shell: sh
-        run: | # Note that the forward slashes "/" in the full path are replaced with underscores "_". The Conjur action also masks the fetched secrets, so these echo commands will output ***
-          echo "Using secrets in another step"
-          echo ${{ fromJSON(steps.your-conjur-fetch-secrets-step.outputs.conjur_output).full_path_to_secret-1 }}
-          echo ${{ fromJSON(steps.your-conjur-fetch-secrets-step.outputs.conjur_output).full_path_to_secret-2 }}
+${{ fromJSON(steps.<action_step_ID>.outputs.conjur_output).<full_path_no_slashes> }}
 
 ----
 
+In the following example, the action output is used in a downstream step of the same job.
+
+NOTE: Each `echo` command outputs `\***` in place of the secret, because the action masks all fetched secrets.
+
+[source,yaml,role="default-expanded"]
+----
+
+jobs:
+  use-conjur-secrets:
+    steps:
+      - name: Fetch secrets from Conjur
+        id: fetch-my-secrets
+        uses: cloudbees-io/cyberark-conjur-fetch-secrets@v1
+        with:
+          login: ${{ vars.YOUR_CONJUR_WORKLOAD_ID }}
+          api-key: ${{ secrets.YOUR_CONJUR_API_KEY }}
+          url: ${{ vars.YOUR_CONJUR_URL }}
+          variables: my-org/my-directory/secret1,my-org/my-directory/secret2
+
+      - name: Use fetched secrets
+        uses: docker://alpine:latest
+        shell: sh
+        run: |
+          echo "Secret1 is fetched but masked: ${{ fromJSON(steps.fetch-my-secrets.outputs.conjur_output).my-org_my-directory_secret1 }}"
+          echo "Secret2 is fetched but masked: ${{ fromJSON(steps.fetch-my-secrets.outputs.conjur_output).my-org_my-directory_secret2 }}"
+
+----
 == License
 
 This code is made available under the 
@@ -104,5 +123,5 @@ link:https://opensource.org/license/mit/[MIT license].
 
 == References
 
-* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-saas-platform/latest/actions[using actions in CloudBees workflows].
-* Learn about link:https://docs.cloudbees.com/docs/cloudbees-saas-platform/latest/[the CloudBees platform].
+* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/actions[using actions in CloudBees workflows].
+* Learn about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/[the CloudBees platform].

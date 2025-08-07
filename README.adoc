@@ -29,7 +29,7 @@ NOTE: If you want to use the same secrets in another job, you must call the Conj
 | `url`
 | String
 | Yes
-| The CyberArk Conjur server URL.
+| The Conjur server URL.
 
 | `variables`
 | String

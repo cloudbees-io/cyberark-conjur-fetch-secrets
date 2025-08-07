@@ -1,7 +1,7 @@
 = CloudBees action: Fetch secrets from CyberArk Conjur
 
 Use this action to fetch secrets from CyberArk Conjur, a tool that securely stores and retrieves sensitive information, such as passwords and API keys.
-Fetched secret output is masked in CloudBees platform and is not logged or accessed by background processes, so it can be used securely in a downstream step of the same job.
+Fetched secret output is masked in CloudBees platform and cannot be logged or accessed by background processes, so it can be used securely in a downstream step of the same job.
 
 NOTE: If you want to use the same secrets in another job, you must call the Conjur action again in that job. 
 
@@ -19,7 +19,7 @@ NOTE: If you want to use the same secrets in another job, you must call the Conj
 | `login`
 | String
 | Yes
-| The host username required to sign in to Conjur.
+| The Conjur workload identity.
 
 | `api-key`
 | String
@@ -70,9 +70,9 @@ The following is a basic example of using this action:
       - name: Fetch secrets from Conjur
         uses: cloudbees-io/cyberark-conjur-fetch-secrets@v1
         with:
-          login: ${{ secrets.CONJUR_USERNAME }}
-          api-key: 12345-abcde-67890-fghij-12345
-          url: https://my-conjur.example.com
+          login: ${{ vars.YOUR_CONJUR_WORKLOAD_ID }}
+          api-key: ${{ secrets.YOUR_CONJUR_API_KEY }}
+          url: ${{ vars.YOUR_CONJUR_URL }}
           variables: full/path/to/secret-1,full/path/to/secret-2
 
 ----
@@ -103,7 +103,7 @@ jobs:
         id: fetch-my-secrets
         uses: cloudbees-io/cyberark-conjur-fetch-secrets@v1
         with:
-          login: ${{ secrets.YOUR_CONJUR_USERNAME }}
+          login: ${{ vars.YOUR_CONJUR_WORKLOAD_ID }}
           api-key: ${{ secrets.YOUR_CONJUR_API_KEY }}
           url: ${{ vars.YOUR_CONJUR_URL }}
           variables: my-org/my-directory/secret1,my-org/my-directory/secret2

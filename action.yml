@@ -25,7 +25,7 @@ runs:
   steps:
     - id: invoke-conjur-action
       name: invoke-conjur-action
-      uses: docker://public.ecr.aws/l7o7z1g8/actions/conjur-actions:main-a549c915437d11420e687ea0d0cf9f9a8c5e8cd0
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/conjur-actions:main-1e436edbaa5c836a00ffcedeeef695b1c729e6db
       shell: sh
       env:
         RUN_ID: ${{ cloudbees.run_id }}
